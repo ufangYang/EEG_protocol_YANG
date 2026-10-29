@@ -42,6 +42,10 @@
   #preview .diff { color:#a33; font-size:12px; }
   #preview .xw { color:#999; font-size:11px; }
   .foot { color:#888; font-size:12px; margin-top:14px; }
+  .beta { font-size:12px; font-weight:600; color:#fff; background:#b26a00; border-radius:4px;
+          padding:2px 7px; vertical-align:middle; }
+  .betanote { background:#fff6e5; border:1px solid #f0d49a; border-radius:6px; padding:10px 14px;
+              font-size:14px; margin:8px 0 14px; }
   @media print {
     body > *:not(#preview) { display:none !important; }
     #preview { border:none; padding:0; }
@@ -49,7 +53,11 @@
 </style>
 </head>
 <body>
-<h1>Study Protocol and Session Record</h1>
+<h1>Study Protocol and Session Record <span class="beta">Beta</span></h1>
+<div class="betanote">This is a beta version, and the fields are still being developed with the electroencephalography and optically pumped magnetometer communities.
+Contributions are welcome. You can suggest a field, report a problem or propose a change through the
+<a href="https://github.com/ufangYang/EEG_protocol_YANG/issues" target="_blank" rel="noopener">issue page</a>,
+or write to <a href="mailto:yu-fang.yang@fu-berlin.de">yu-fang.yang@fu-berlin.de</a>.</div>
 <p class="sub">For electroencephalography and optically pumped magnetometer magnetoencephalography.
 Part 1 declares the study, the planned recording and the planned preprocessing before any data are collected;
 lock it to add a timestamp. Part 2 records, at each session, what was actually done and where it differed from the plan.
@@ -416,7 +424,7 @@ function dl(kind){ download(fname("json"), JSON.stringify(collect(),null,2), "ap
 
 document.addEventListener("input", render);
 document.addEventListener("change", render);
-document.getElementById("foot").textContent = "Protocol format v"+VERSION+". Fields follow ARTEM-IS and COBIDAS-MEEG; system starting values follow the OPM-FLUX preprint. Grey tags name the matching OPM-FLUX section and Brain Imaging Data Structure key.";
+document.getElementById("foot").textContent = "Protocol format v"+VERSION+". Fields follow ARTEM-IS and COBIDAS-MEEG; system starting values follow the OPM-FLUX preprint. Grey tags name the matching OPM-FLUX section and Brain Imaging Data Structure key. Beta version. Released under the MIT licence, © 2026 Yu-Fang Yang.";
 applyMethod();
 </script>
 </body>
