@@ -3,21 +3,25 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>EEG Study Protocol</title>
+<title>Study Protocol and Session Record</title>
 <style>
   :root { --line:#e3e3e6; --muted:#666; --accent:#2b5bd7; }
   * { box-sizing:border-box; }
   body { font-family:-apple-system,Segoe UI,Roboto,sans-serif; color:#1a1a1a;
          max-width:900px; margin:0 auto; padding:24px 18px 60px; line-height:1.4; }
   h1 { margin:0 0 2px; font-size:22px; }
+  h2.part { font-size:18px; margin:26px 0 4px; }
   .sub { color:var(--muted); margin:0 0 18px; }
   fieldset { border:1px solid var(--line); border-radius:8px; margin:0 0 14px; padding:12px 16px 16px;
              background:#f7f7f8; }
+  fieldset.method { background:#eef4ff; border-color:#cdddff; }
   legend { font-weight:600; padding:0 6px; }
   label { display:block; font-size:14px; margin:10px 0 3px; }
+  .tag { color:#888; font-size:12px; font-weight:normal; }
   input[type=text], input[type=number], textarea, select {
      width:100%; padding:7px 9px; border:1px solid #ccc; border-radius:5px; font-size:14px;
      font-family:inherit; background:#fff; }
+  input:disabled, textarea:disabled, select:disabled { background:#f0f0f2; color:#555; }
   textarea { resize:vertical; }
   .check { display:flex; align-items:center; gap:8px; margin-top:10px; }
   .check input { width:auto; }
@@ -26,25 +30,50 @@
   .btns { display:flex; gap:12px; margin:6px 0 20px; flex-wrap:wrap; }
   button { padding:9px 16px; border-radius:6px; border:1px solid #ccc; background:#fff; cursor:pointer; font-size:14px; }
   button.primary { background:var(--accent); color:#fff; border-color:var(--accent); }
+  .srow { display:grid; grid-template-columns: 1.3fr 1fr 1.4fr; gap:8px; align-items:center;
+          padding:6px 0; border-top:1px solid var(--line); font-size:14px; }
+  .srow:first-of-type { border-top:none; }
+  .shead { font-size:12px; color:var(--muted); border-top:none; padding-bottom:0; }
+  @media (max-width:640px){ .srow { grid-template-columns:1fr; } .shead { display:none; } }
   #preview { border:1px solid var(--line); border-radius:8px; padding:14px 18px; background:#fff; }
-  #preview table { border-collapse:collapse; }
-  #preview td { padding:3px 10px 3px 0; vertical-align:top; }
-  #preview td.k { color:#555; white-space:nowrap; }
+  #preview table { border-collapse:collapse; width:100%; }
+  #preview td { padding:3px 10px 3px 0; vertical-align:top; font-size:14px; }
+  #preview td.k { color:#555; width:42%; }
+  #preview .diff { color:#a33; font-size:12px; }
+  #preview .xw { color:#999; font-size:11px; }
   .foot { color:#888; font-size:12px; margin-top:14px; }
+  @media print {
+    body > *:not(#preview) { display:none !important; }
+    #preview { border:none; padding:0; }
+  }
 </style>
 </head>
 <body>
-<h1>EEG Study Protocol</h1>
-<p class="sub">Declare the study and its planned recording and preprocessing before any data are collected.
-Lock the form to timestamp it, then export a structured record to store with the study.
-Runs entirely in your browser; nothing is uploaded.</p>
+<h1>Study Protocol and Session Record</h1>
+<p class="sub">For electroencephalography and optically pumped magnetometer magnetoencephalography.
+Part 1 declares the study, the planned recording and the planned preprocessing before any data are collected;
+lock it to add a timestamp. Part 2 records, at each session, what was actually done and where it differed from the plan.
+The form runs entirely in your browser, and nothing is uploaded.</p>
 
+<fieldset class="method">
+  <legend>Recording method</legend>
+  <label for="method">Method and system</label>
+  <select id="method">
+    <option value="eeg">Electroencephalography</option>
+    <option value="cerca">Optically pumped magnetometer magnetoencephalography: Cerca Magnetics system</option>
+    <option value="fieldline">Optically pumped magnetometer magnetoencephalography: FieldLine system</option>
+    <option value="opm_other">Optically pumped magnetometer magnetoencephalography: other system</option>
+  </select>
+  <p class="sub" id="method_note" style="margin:8px 0 0"></p>
+</fieldset>
+
+<h2 class="part">Part 1. Protocol, declared before data collection</h2>
 <form id="f"></form>
 
 <fieldset>
   <legend>Rationale</legend>
   <label for="rationale">Notes (brief)</label>
-  <textarea id="rationale" rows="3" placeholder="One or two lines on the reasoning, prior work, or a linked pre-registration."></textarea>
+  <textarea id="rationale" rows="3" placeholder="One or two lines on the reasoning, prior work, or a linked preregistration."></textarea>
   <div class="lockbox">
     <div class="check">
       <input type="checkbox" id="locked">
@@ -54,9 +83,28 @@ Runs entirely in your browser; nothing is uploaded.</p>
   </div>
 </fieldset>
 
+<h2 class="part">Part 2. Session record, filled in at each recording session</h2>
+<p class="sub">For each step, say whether it was done as planned, and give the actual value or the reason it differed.
+Export one record per session.</p>
+<fieldset>
+  <legend>Session</legend>
+  <label for="s_participant">Participant code</label><input type="text" id="s_participant" placeholder="for example sub-01">
+  <label for="s_session">Session number</label><input type="text" id="s_session" placeholder="for example 1">
+  <label for="s_date">Session date</label><input type="text" id="s_date" placeholder="YYYY-MM-DD">
+  <label for="s_staff">People running the session</label><input type="text" id="s_staff">
+</fieldset>
+<fieldset>
+  <legend>Steps at this session</legend>
+  <div id="steps"></div>
+</fieldset>
+<fieldset>
+  <legend>Other deviations and notes</legend>
+  <textarea id="s_notes" rows="3" placeholder="Anything else that happened in this session and is not covered above."></textarea>
+</fieldset>
+
 <div class="btns">
-  <button type="button" class="primary" onclick="dl('json')">Download protocol (JSON)</button>
-  <button type="button" onclick="dl('html')">Download protocol (HTML)</button>
+  <button type="button" class="primary" onclick="dl('json')">Download record (JSON)</button>
+  <button type="button" onclick="window.print()">Save record as PDF</button>
 </div>
 
 <h3>Preview</h3>
@@ -64,71 +112,176 @@ Runs entirely in your browser; nothing is uploaded.</p>
 <p class="foot" id="foot"></p>
 
 <script>
-const VERSION = "0.3";
-const sections = {
-  "Study & registration": [
-    ["study","Study / paradigm","text",""],
+const VERSION = "0.4";
+
+// Starting values for each system, taken from the OPM-FLUX preprint (Rakshita, Ghafari, Kowalczyk and Jensen, 2026).
+const MODULE_DEFAULTS = {
+  cerca: {
+    opm_axes:"Three axes", srate:1500, trigger:"Lines combined into one binary code",
+    opm_mode:"Closed loop with on-sensor compensation coils", degauss:"Yes",
+    nulling:"Skipped because the sensors run in closed-loop mode",
+    coreg:"Three-dimensional camera scan of the head with and without the helmet",
+    landmarks:"Nasion, left and right helix and tragus junctions"
+  },
+  fieldline: {
+    opm_axes:"Single axis", srate:5000, trigger:"One digital channel (di32)",
+    opm_mode:"Closed loop with on-sensor compensation coils", degauss:"No",
+    nulling:"Skipped because the sensors run in closed-loop mode",
+    coreg:"Electromagnetic digitiser (Polhemus), without and then with the helmet",
+    landmarks:"Nasion, left and right helix and tragus junctions, plus extra reference points (\"fake\" landmarks)"
+  }
+};
+const METHOD_NOTES = {
+  eeg:"Electrode, reference and impedance fields are shown.",
+  cerca:"Fields are pre-filled with the Cerca settings described in OPM-FLUX. Change any value; the record marks where it differs from these starting values.",
+  fieldline:"Fields are pre-filled with the FieldLine settings described in OPM-FLUX. Change any value; the record marks where it differs from these starting values.",
+  opm_other:"Fields for optically pumped magnetometer systems are shown without starting values."
+};
+
+// [id, label, type, extra, crosswalk]. Crosswalk names the Brain Imaging Data Structure key and the OPM-FLUX section where one exists.
+const sections = [
+  { title:"Study and registration", mod:"core", fields:[
+    ["study","Study or paradigm","text",""],
     ["experimenter","Person completing this form","text",""],
     ["date_planned","Date of this declaration","text","YYYY-MM-DD"],
-    ["hypothesis","Hypothesis / prediction","area","What effect do you predict, and in which direction?"],
-    ["design","Design & conditions","area","e.g., 2x2 within-subject: inclusion vs exclusion x gaze direction"]
-  ],
-  "Sample & eligibility": [
+    ["hypothesis","Hypothesis or prediction","area","What effect do you predict, and in which direction?"],
+    ["design","Design and conditions","area","for example a 2 by 2 within-subject design: inclusion versus exclusion by gaze direction"]
+  ]},
+  { title:"Sample and eligibility", mod:"core", fields:[
     ["n_planned","Planned sample size","num",40],
-    ["stopping","Sampling / stopping rule","area","e.g., collect until N=40 usable datasets; recruit at most 55"],
-    ["inclusion","Inclusion criteria","area","e.g., 18-35, right-handed, normal or corrected vision"],
-    ["exclusion","Exclusion criteria","area","e.g., neurological history, prior Cyberball, fewer than the minimum trials"]
-  ],
-  "Planned recording": [
-    ["eeg_system","EEG system & cap","text","e.g., BrainProducts actiCHamp, 22 ch"],
+    ["stopping","Sampling or stopping rule","area","for example collect until 40 usable datasets; recruit at most 55"],
+    ["inclusion","Inclusion criteria","area","for example 18 to 35 years, right-handed, normal or corrected vision"],
+    ["exclusion","Exclusion criteria","area","for example neurological history, fewer than the minimum number of trials"]
+  ]},
+  { title:"Planned recording: shared settings", mod:"core", fields:[
+    ["srate","Sampling rate (hertz)","num",1000,{bids:"SamplingFrequency"}],
+    ["downsample","Planned downsampling and anti-aliasing filter","text","for example to 1000 hertz after a 250 hertz low-pass filter, or none",{flux:"4.1"}],
+    ["line_freq","Mains frequency (hertz)","select",["50","60"],{bids:"PowerLineFrequency"}],
+    ["trigger","Trigger coding, fixed in advance","select",["Separate trigger lines","Lines combined into one binary code","One digital channel (di32)","Other"]],
+    ["photodiode","Trigger timing checked with a photodiode","select",["Yes","No"]],
+    ["monitor","Stimulus monitor, refresh rate and gamma correction","text","for example ViewPixx, 120 hertz, gamma corrected"],
+    ["eye_rec","Eye movement recording","select",["Electrooculography","Eye tracker","Electrooculography and eye tracker","None"],{bids:"EOGChannelCount"}],
+    ["heart_rec","Heart recording","select",["Electrocardiography","None"],{bids:"ECGChannelCount"}],
+    ["rest","Eyes-open resting state recording (minutes)","num",5],
+    ["runs","Number of runs and duration per run","text","for example 4 runs of 10 minutes",{bids:"RecordingDuration"}],
+    ["software_acq","Acquisition software and version","text",""],
+    ["software","Analysis software and version","text","for example MNE-Python 1.7, EEGLAB 2024.2"]
+  ]},
+  { title:"Planned recording: electroencephalography", mod:"eeg", fields:[
+    ["eeg_system","Amplifier and cap","text","for example BrainProducts actiCHamp, 64 channels",{bids:"CapManufacturer"}],
     ["electrode_type","Electrode type","select",["Gel-based","Saline-based","Dry","Other"]],
-    ["srate","Sampling rate (Hz)","num",1000],
-    ["amp_filters","Amplifier (online) filters","text","e.g., 0.016 to 1000 Hz, or DC"],
-    ["rec_ref","Reference at recording","text","e.g., FCz / linked mastoids"],
-    ["ground","Ground electrode","text","e.g., FCz, AFz, Fpz"],
-    ["component","ERP component(s) of interest","text","e.g., P3b, N400"],
-    ["software","Analysis software & version","text","e.g., EEGLAB 2024.2, MNE 1.7"]
-  ],
-  "Planned preprocessing — filtering": [
-    ["hp","High-pass cutoff (Hz)","num",0.1],
-    ["lp","Low-pass cutoff (Hz)","num",30],
-    ["notch","Notch / line filter","text","e.g., 50 Hz, or none"],
-    ["filt_type","Filter type & order","text","e.g., FIR, Hamming, zero-phase"]
-  ],
-  "Planned preprocessing — referencing & channels": [
-    ["reref","Re-reference scheme","select",["Keep recording reference","Average reference","Linked mastoids","REST","Other"]],
-    ["badchan","Bad-channel detection","area","Criterion for marking a channel bad (e.g., kurtosis > 5, flat > 5 s)"],
-    ["interp","Interpolation method","text","e.g., spherical spline, or none"]
-  ],
-  "Planned preprocessing — segmentation": [
-    ["lock_event","Time-locking event(s)","text","e.g., stimulus onset (S 1/S 2)"],
-    ["epoch","Epoch window (ms)","text","e.g., -200 to 800"],
-    ["baseline","Baseline window (ms)","text","e.g., -200 to 0"]
-  ],
-  "Planned preprocessing — artifact correction (ICA)": [
-    ["ica_use","Use ICA?","check",true],
-    ["ica_algo","ICA algorithm","text","e.g., extended Infomax, AMICA"],
-    ["ica_rej","Component rejection rule","area","How components are identified and removed (e.g., ICLabel > 0.8 eye/muscle)"]
-  ],
-  "Planned preprocessing — artifact rejection": [
-    ["rej_method","Trial rejection method","area","e.g., absolute amplitude > 100 uV, or step function"],
-    ["rej_thresh","Threshold","text","e.g., 100 uV"],
+    ["amp_filters","Amplifier (online) filters","text","for example 0.016 to 1000 hertz, or direct current",{bids:"HardwareFilters"}],
+    ["rec_ref","Reference at recording","text","for example FCz or linked mastoids",{bids:"EEGReference"}],
+    ["ground","Ground electrode","text","for example AFz",{bids:"EEGGround"}],
+    ["impedance","Impedance threshold (kilohms)","num",10],
+    ["imp_meter","Impedance meter","text",""],
+    ["eog_place","Placement of the eye movement electrodes","text","for example outer canthi and below the left eye"]
+  ]},
+  { title:"Planned recording: optically pumped magnetometer system", mod:"opm", fields:[
+    ["opm_system","System and sensor model","text","for example Cerca Magnetics with QuSpin sensors",{bids:"Manufacturer"}],
+    ["opm_n","Number of sensors","num","",{bids:"MEGChannelCount"}],
+    ["opm_axes","Measurement axes per sensor","select",["Three axes","Two axes","Single axis","Other"]],
+    ["opm_mode","Sensor operating mode","select",["Closed loop with on-sensor compensation coils","Open loop","Other"]],
+    ["helmet","Helmet type","select",["Rigid generic helmet","Flexible cap","Individual head cast printed in three dimensions","Other"]],
+    ["helmet_size","Helmet sizes available","text",""]
+  ]},
+  { title:"Planned recording: shielded room", mod:"opm", fields:[
+    ["msr","Magnetically shielded room (model and layers)","text",""],
+    ["degauss","Degaussing before each recording","select",["Yes","No"],{flux:"3.2"}],
+    ["degauss_why","Reason if no degaussing","text","for example the fixed helmet array gave no measurable gain"],
+    ["nulling","Field nulling","select",["Done with room coils","Skipped because the sensors run in closed-loop mode","Done because participants move","Other"],{flux:"3.3"}],
+    ["nulling_sw","Field nulling coil software","text",""],
+    ["tuning","Sensor tuning and calibration before each participant","area","Procedure, and the rule for disabling a sensor"],
+    ["empty_room","Empty room recording (minutes)","num",3,{bids:"AssociatedEmptyRoom",flux:"3.4"}],
+    ["interference","Known sources of interference in the room","text","for example ventilation, lights, nearby equipment"]
+  ]},
+  { title:"Planned recording: participant and co-registration", mod:"opm", fields:[
+    ["clothing","Non-magnetic clothing and removal of metal objects","select",["Required and checked","Not checked"]],
+    ["movement","Participant movement","select",["Participant stays still","Natural movement allowed","Movement is part of the task"]],
+    ["head_track","Head position tracking","select",["None","Optical tracking","Other"],{bids:"ContinuousHeadLocalization"}],
+    ["landmarks","Landmarks marked on the skin","text","for example nasion, left and right helix and tragus junctions",{bids:"AnatomicalLandmarkCoordinates",flux:"3.1"}],
+    ["coreg","Co-registration method","select",["Three-dimensional camera scan of the head with and without the helmet","Electromagnetic digitiser (Polhemus), without and then with the helmet","Optical or structured light scanner","Head cast built from the magnetic resonance image","Other"],{flux:"3.1"}],
+    ["headpoints","Number of head shape points","text","",{bids:"DigitizedHeadPoints"}],
+    ["mri","Structural magnetic resonance image","select",["Individual T1-weighted scan","Template brain","None"],{flux:"3.5"}],
+    ["mri_seq","Magnetic resonance sequence","select",["Magnetisation-prepared rapid gradient echo","Fast low-angle shot","Other"],{flux:"3.5"}]
+  ]},
+  { title:"Planned preprocessing: channels (electroencephalography)", mod:"eeg", fields:[
+    ["reref","Re-reference scheme","select",["Keep recording reference","Average reference","Linked mastoids","Reference electrode standardisation technique","Other"]],
+    ["badchan","Bad channel detection","area","for example flat for more than 5 seconds, or kurtosis above 5"],
+    ["interp","Interpolation method","text","for example spherical spline, or none"]
+  ]},
+  { title:"Planned preprocessing: sensors and interference (optically pumped magnetometers)", mod:"opm", fields:[
+    ["badsens","Faulty sensor detection","area","for example flat signal, sudden jumps, outliers in the power spectrum"],
+    ["badsens_max","Maximum number of removed sensors before a dataset is excluded","num",""],
+    ["suppress","Interference suppression","select",["Homogeneous field correction","Signal space separation","Adaptive multipole models","None","Other"],{flux:"4.2.2"}],
+    ["suppress_set","Settings for the suppression method","text","for example first-order homogeneous field correction"]
+  ]},
+  { title:"Planned preprocessing: filtering", mod:"core", fields:[
+    ["hp","High-pass cutoff (hertz)","num",0.1],
+    ["lp","Low-pass cutoff (hertz)","num",30],
+    ["notch","Line noise filter","text","for example 50 hertz and harmonics, or none",{bids:"SoftwareFilters"}],
+    ["filt_type","Filter type, length and phase","text","for example finite impulse response, Hamming window, zero phase"]
+  ]},
+  { title:"Planned preprocessing: artefacts and independent component analysis", mod:"core", fields:[
+    ["art_mark","Artefacts marked, and how","area","for example movement, blinks, saccades, muscle activity, sensor jumps; automatic or manual"],
+    ["ica_use","Use independent component analysis","check",true],
+    ["ica_algo","Algorithm and number of components","text","for example FastICA, 30 components"],
+    ["ica_rej","Component rejection rule","area","for example correlation with eye and heart channels, then visual inspection"]
+  ]},
+  { title:"Planned preprocessing: segmentation and trial rejection", mod:"core", fields:[
+    ["lock_event","Time-locking events","text","for example stimulus onset"],
+    ["epoch","Epoch window (milliseconds)","text","for example -200 to 800"],
+    ["baseline","Baseline window (milliseconds)","text","for example -200 to 0"],
+    ["rej_method","Trial rejection method","area","for example based on marked artefacts, or an amplitude threshold"],
+    ["rej_thresh","Threshold","text","for example 100 microvolts, or 4000 femtotesla"],
     ["min_trials","Minimum trials per condition","num",20]
-  ],
-  "Planned measurement & analysis": [
-    ["meas_window","Measurement window (ms)","text","e.g., 300 to 500"],
-    ["meas_elec","Electrode(s) / ROI","text","e.g., Pz, POz, CPz"],
-    ["meas_type","Measure","select",["Mean amplitude","Peak amplitude","Peak latency","Fractional area latency","Other"]],
-    ["stat_plan","Planned statistical test","area","e.g., 2x2 repeated-measures ANOVA on mean amplitude; alpha .05; correction for multiple comparisons"]
-  ]
-};
-const labels = {};
+  ]},
+  { title:"Planned measurement and analysis", mod:"core", fields:[
+    ["analysis_type","Main analysis","select",["Event-related potentials or fields","Time-frequency power","Multivariate decoding","Source modelling","Other"]],
+    ["meas_window","Time window (milliseconds) and frequency band (hertz)","text","for example 300 to 500 milliseconds; alpha 8 to 12 hertz"],
+    ["meas_chan","Channels or sensors of interest","text","for example Pz, POz, CPz, or posterior sensors"],
+    ["meas_type","Measure","select",["Mean amplitude","Peak amplitude","Peak latency","Power","Decoding accuracy","Other"]],
+    ["source","Source model (if used)","area","for example single-shell boundary element model, volume grid, linearly constrained minimum variance beamformer, regularisation 5 percent"],
+    ["stat_plan","Planned statistical test","area","for example 2 by 2 repeated-measures analysis of variance; alpha 0.05; correction for multiple comparisons"]
+  ]}
+];
+
+// Steps recorded at each session.
+const STEPS = [
+  ["st_srate","Sampling rate used","core"],
+  ["st_trigger","Triggers checked","core"],
+  ["st_photo","Photodiode timing checked","core"],
+  ["st_gamma","Monitor gamma correction checked","core"],
+  ["st_eye","Eye tracker calibrated","core"],
+  ["st_rest","Resting state recorded","core"],
+  ["st_imp","Impedance reached (all channels, ground, references)","eeg"],
+  ["st_ref","Reference and ground placement checked","eeg"],
+  ["st_eog","Eye movement electrode placement checked","eeg"],
+  ["st_gel","Gel condition checked between blocks","eeg"],
+  ["st_glasses","Glasses or headrest not pressing on electrodes","eeg"],
+  ["st_degauss","Degaussing","opm"],
+  ["st_nulling","Field nulling","opm"],
+  ["st_tuning","Sensors tuned and calibrated","opm"],
+  ["st_disabled","Sensors disabled after tuning (number and names)","opm"],
+  ["st_empty","Empty room recording","opm"],
+  ["st_clothing","Non-magnetic clothing and metal check","opm"],
+  ["st_helmet","Helmet size and fit checked","opm"],
+  ["st_landmarks","Landmarks marked","opm"],
+  ["st_coreg","Co-registration scan or digitisation done","opm"],
+  ["st_coreg_check","Co-registration checked visually","opm"]
+];
+const STATUS = ["Not yet filled in","Done as planned","Done differently","Not done","Not applicable"];
+
+const labels = {}, fieldMod = {}, xwalk = {};
 const form = document.getElementById("f");
-for (const [sec, fields] of Object.entries(sections)) {
+for (const s of sections) {
   const fs = document.createElement("fieldset");
-  fs.innerHTML = "<legend>"+sec+"</legend>";
-  for (const [id,lab,type,extra] of fields) {
-    labels[id] = lab;
+  fs.dataset.mod = s.mod;
+  fs.innerHTML = "<legend>"+s.title+"</legend>";
+  for (const [id,lab,type,extra,xw] of s.fields) {
+    labels[id] = lab; fieldMod[id] = s.mod; if (xw) xwalk[id] = xw;
+    let tag = "";
+    if (xw) tag = ' <span class="tag">'+[xw.flux?("OPM-FLUX "+xw.flux):"", xw.bids?("BIDS "+xw.bids):""].filter(Boolean).join(" · ")+'</span>';
     const wrap = document.createElement("div");
     if (type==="check") {
       wrap.className="check";
@@ -139,15 +292,24 @@ for (const [sec, fields] of Object.entries(sections)) {
       else if (type==="num") field=`<input type="number" id="${id}" value="${extra}" step="any">`;
       else if (type==="area") field=`<textarea id="${id}" rows="2" placeholder="${extra||""}"></textarea>`;
       else if (type==="select") field=`<select id="${id}">`+extra.map(o=>`<option>${o}</option>`).join("")+`</select>`+
-        `<input type="text" id="${id}__other" placeholder="Type your own…" style="display:none;margin-top:6px">`;
-      wrap.innerHTML = `<label for="${id}">${lab}</label>`+field;
+        `<input type="text" id="${id}__other" placeholder="Type your own" style="display:none;margin-top:6px">`;
+      wrap.innerHTML = `<label for="${id}">${lab}${tag}</label>`+field;
     }
     fs.appendChild(wrap);
   }
   form.appendChild(fs);
 }
 
-// dropdowns: reveal a text box when "Other" is chosen so people can add their own value
+const stepsEl = document.getElementById("steps");
+stepsEl.innerHTML = '<div class="srow shead"><div>Step</div><div>Status</div><div>Actual value or reason</div></div>';
+for (const [id,lab,mod] of STEPS) {
+  const row = document.createElement("div");
+  row.className = "srow"; row.dataset.mod = mod;
+  row.innerHTML = `<div>${lab}</div><select id="${id}">`+STATUS.map(o=>`<option>${o}</option>`).join("")+
+    `</select><input type="text" id="${id}__note" placeholder="Value, or reason it differed">`;
+  stepsEl.appendChild(row);
+}
+
 document.querySelectorAll('#f select').forEach(sel => {
   sel.addEventListener('change', () => {
     const o = document.getElementById(sel.id + '__other');
@@ -156,55 +318,106 @@ document.querySelectorAll('#f select').forEach(sel => {
   });
 });
 
+const methodEl = document.getElementById("method");
+function family(){ return methodEl.value==="eeg" ? "eeg" : "opm"; }
+function applyMethod(){
+  const fam = family();
+  document.querySelectorAll('[data-mod]').forEach(el => {
+    el.style.display = (el.dataset.mod==="core" || el.dataset.mod===fam) ? "" : "none";
+  });
+  const d = MODULE_DEFAULTS[methodEl.value];
+  if (d) for (const [id,v] of Object.entries(d)) {
+    const e = document.getElementById(id); if (!e || e.disabled) continue;
+    e.value = v; e.dispatchEvent(new Event('change'));
+  }
+  document.getElementById("method_note").textContent = METHOD_NOTES[methodEl.value];
+  render();
+}
+methodEl.addEventListener("change", applyMethod);
+
 let lockTime = null;
 const lockEl = document.getElementById("locked");
 const stampEl = document.getElementById("stamp");
+function setPlanDisabled(on){
+  document.querySelectorAll('#f input, #f textarea, #f select, #rationale, #method').forEach(e => e.disabled = on);
+}
 lockEl.addEventListener("change", () => {
   if (lockEl.checked && !lockTime) lockTime = new Date().toISOString().replace("T"," ").slice(0,19)+" UTC";
   if (!lockEl.checked) lockTime = null;
-  stampEl.innerHTML = lockTime ? ('Locked at <span class="stamp">'+lockTime+'</span>') : "Not yet locked.";
+  setPlanDisabled(lockEl.checked);
+  stampEl.innerHTML = lockTime ? ('Locked at <span class="stamp">'+lockTime+'</span>. Uncheck to edit again; this clears the timestamp.') : "Not yet locked.";
   render();
 });
 
 function val(id){ const e=document.getElementById(id); if(!e) return "";
   if(e.tagName==="SELECT"){ const o=document.getElementById(id+"__other"); if(e.value==="Other"&&o&&o.value.trim()) return o.value.trim(); return e.value; }
   return e.type==="checkbox"?e.checked:e.value; }
+function shown(mod){ return mod==="core" || mod===family(); }
 function collect(){
-  const fields={};
-  for (const id of Object.keys(labels)) fields[id]=val(id);
-  return { protocol_format_version:VERSION, generated:new Date().toISOString().replace("T"," ").slice(0,19)+" UTC",
-           declared_before_data_collection:lockEl.checked, locked_at:lockTime, rationale:val("rationale"), fields };
+  const fields={}, differs={};
+  const d = MODULE_DEFAULTS[methodEl.value] || {};
+  for (const id of Object.keys(labels)) if (shown(fieldMod[id])) {
+    fields[id]=val(id);
+    if (id in d && String(fields[id])!==String(d[id])) differs[id]=d[id];
+  }
+  const steps={};
+  for (const [id,,mod] of STEPS) if (shown(mod)) steps[id]={ status:val(id), note:val(id+"__note") };
+  return { protocol_format_version:VERSION,
+           generated:new Date().toISOString().replace("T"," ").slice(0,19)+" UTC",
+           method:methodEl.options[methodEl.selectedIndex].text,
+           declared_before_data_collection:lockEl.checked, locked_at:lockTime,
+           rationale:val("rationale"), protocol:fields, differs_from_system_defaults:differs,
+           crosswalk:xwalk,
+           session:{ participant:val("s_participant"), session:val("s_session"), date:val("s_date"),
+                     staff:val("s_staff"), steps, notes:val("s_notes") } };
 }
 function esc(s){ return String(s).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c])); }
+function show(v){ if(v===""||v===false||v==null) return "not given"; if(v===true) return "yes"; return v; }
 function reportHTML(d){
+  const sys = methodEl.value==="cerca"?"Cerca":methodEl.value==="fieldline"?"FieldLine":"";
   let secs="";
-  for (const [sec,fields] of Object.entries(sections)){
+  for (const s of sections){
+    if (!shown(s.mod)) continue;
     let rows="";
-    for (const [id] of fields){
-      let v=d.fields[id]; if(v===""||v===false||v==null) v="—"; if(v===true) v="yes";
-      rows+=`<tr><td class="k">${labels[id]}</td><td>${esc(v)}</td></tr>`;
+    for (const [id] of s.fields){
+      let extra="";
+      if (id in d.differs_from_system_defaults) extra=`<br><span class="diff">Differs from the ${sys} starting value: ${esc(d.differs_from_system_defaults[id])}</span>`;
+      const xw=xwalk[id]; let xt="";
+      if (xw) xt=`<br><span class="xw">${[xw.flux?("OPM-FLUX "+xw.flux):"", xw.bids?("BIDS "+xw.bids):""].filter(Boolean).join(" · ")}</span>`;
+      rows+=`<tr><td class="k">${labels[id]}${xt}</td><td>${esc(show(d.protocol[id]))}${extra}</td></tr>`;
     }
-    secs+=`<h4 style="margin:14px 0 4px">${sec}</h4><table>${rows}</table>`;
+    secs+=`<h4 style="margin:14px 0 4px">${s.title}</h4><table>${rows}</table>`;
   }
-  return `<h2 style="margin-bottom:2px">EEG Study Protocol</h2>`+
-    `<p style="color:#666;margin-top:0">Declared before data collection: <b>${d.declared_before_data_collection?"yes":"no"}</b> · `+
-    `Locked at: <span class="stamp">${d.locked_at||"not locked"}</span></p>`+secs+
-    `<h4 style="margin:14px 0 4px">Rationale</h4><p>${esc(d.rationale||"—")}</p>`+
+  let srows="";
+  for (const [id,lab,mod] of STEPS){ if(!shown(mod)) continue; const st=d.session.steps[id];
+    srows+=`<tr><td class="k">${lab}</td><td>${esc(st.status)}${st.note?(": "+esc(st.note)):""}</td></tr>`; }
+  const ss=d.session;
+  return `<h2 style="margin-bottom:2px">Study Protocol and Session Record</h2>`+
+    `<p style="color:#666;margin-top:0">${esc(d.method)}<br>Declared before data collection: <b>${d.declared_before_data_collection?"yes":"no"}</b> · `+
+    `Locked at: <span class="stamp">${d.locked_at||"not locked"}</span></p>`+
+    `<h3 style="margin:18px 0 0">Part 1. Protocol</h3>`+secs+
+    `<h4 style="margin:14px 0 4px">Rationale</h4><p>${esc(show(d.rationale))}</p>`+
+    `<h3 style="margin:18px 0 0">Part 2. Session record</h3>`+
+    `<table><tr><td class="k">Participant</td><td>${esc(show(ss.participant))}</td></tr>`+
+    `<tr><td class="k">Session</td><td>${esc(show(ss.session))}</td></tr>`+
+    `<tr><td class="k">Date</td><td>${esc(show(ss.date))}</td></tr>`+
+    `<tr><td class="k">People running the session</td><td>${esc(show(ss.staff))}</td></tr></table>`+
+    `<h4 style="margin:14px 0 4px">Steps</h4><table>${srows}</table>`+
+    `<h4 style="margin:14px 0 4px">Other deviations and notes</h4><p>${esc(show(ss.notes))}</p>`+
     `<p style="color:#888;font-size:12px">Protocol format v${d.protocol_format_version} · generated ${d.generated}</p>`;
 }
 function render(){ document.getElementById("preview").innerHTML = reportHTML(collect()); }
 function fname(ext){ let s=val("study")||"study"; s=s.replace(/[^A-Za-z0-9_-]+/g,"-");
-  const day=new Date().toISOString().slice(0,10).replace(/-/g,""); return `protocol_${s}_${day}.${ext}`; }
+  let p=val("s_participant"); p=p?("_"+p.replace(/[^A-Za-z0-9_-]+/g,"-")):"";
+  const day=new Date().toISOString().slice(0,10).replace(/-/g,""); return `record_${s}${p}_${day}.${ext}`; }
 function download(name,text,mime){ const b=new Blob([text],{type:mime}); const u=URL.createObjectURL(b);
   const a=document.createElement("a"); a.href=u; a.download=name; a.click(); URL.revokeObjectURL(u); }
-function dl(kind){ const d=collect();
-  if(kind==="json") download(fname("json"), JSON.stringify(d,null,2), "application/json");
-  else download(fname("html"), "<!doctype html><meta charset='utf-8'><title>EEG study protocol</title>"+reportHTML(d), "text/html"); }
+function dl(kind){ download(fname("json"), JSON.stringify(collect(),null,2), "application/json"); }
 
-form.addEventListener("input", render);
-document.getElementById("rationale").addEventListener("input", render);
-document.getElementById("foot").textContent = "Protocol format v"+VERSION+" · fields follow ARTEM-IS / COBIDAS-MEEG conventions.";
-render();
+document.addEventListener("input", render);
+document.addEventListener("change", render);
+document.getElementById("foot").textContent = "Protocol format v"+VERSION+". Fields follow ARTEM-IS and COBIDAS-MEEG; system starting values follow the OPM-FLUX preprint. Grey tags name the matching OPM-FLUX section and Brain Imaging Data Structure key.";
+applyMethod();
 </script>
 </body>
 </html>
