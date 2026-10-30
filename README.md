@@ -23,7 +23,7 @@ This is a beta version. The fields are still being developed with the EEG and OP
 
 ## Contributing
 
-Contributions are welcome. You can suggest a field, report a problem or propose a change by opening an issue in this repository, or by writing to yu-fang.yang@fu-berlin.de.
+Contributions are welcome. To suggest a field, report a problem or propose a change, please write to yu-fang.yang@fu-berlin.de.
 
 ## Licence
 
